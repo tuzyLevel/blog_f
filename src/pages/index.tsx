@@ -13,10 +13,7 @@ import { modalStateSchema } from "@/states/modalState";
 
 import PostingListContainer from "@/components/Container/PostingListContainer";
 import Badge from "@/components/Badge/Badge";
-
-// import { loginStateSchema } from "@/states/loginState";
-
-import BoardSideBar from "@/components/BoardSideBar/BoardSideBar";
+// import BoardSideBar from "@/components/BoardSideBar/BoardSideBar";
 import NoticeBoard from "@/components/NoticeBoard/NoticeBoard";
 import ReadPostingContainer from "@/components/Container/ReadPostingContainer";
 

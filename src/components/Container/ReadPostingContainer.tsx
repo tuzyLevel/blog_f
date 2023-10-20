@@ -9,11 +9,11 @@ const ReadPostingContainer = (props: ReadPostingContainerProps) => {
   return (
     <>
       {posting ? (
-        <div className="w-full h-full">
-          <div>
-            <div className="text-center text-4xl mb-10">{posting.title}</div>
-            <div dangerouslySetInnerHTML={{ __html: posting.content }}></div>
-          </div>
+        <div className="flex flex-col justify-center items-center w-full h-full">
+          {/* <div > */}
+          <div className="text-center text-4xl mb-10">{posting.title}</div>
+          <div dangerouslySetInnerHTML={{ __html: posting.content }}></div>
+          {/* </div> */}
         </div>
       ) : (
         <></>

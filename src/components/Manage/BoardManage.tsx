@@ -2,7 +2,9 @@ import React, { useRef } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { axiosWithAuth } from "@/util/customAxios";
+import useAxios from "@/customHooks/useAxios";
+
+// import { axiosWithAuth } from "@/util/customAxios";
 
 interface BoardManageProps extends React.PropsWithChildren {
   boardData: ParentBoard[] | null;
@@ -17,6 +19,8 @@ const BoardManage = (props: BoardManageProps) => {
   const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}`;
   const router = useRouter();
 
+  const axios = useAxios();
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const boardData = props.boardData!;
@@ -27,18 +31,18 @@ const BoardManage = (props: BoardManageProps) => {
   const setSelectedBoard = props.setSelectedBoard;
 
   const getBoardListResponse = async () => {
-    const response = await axiosWithAuth(`${URL}/api/admin/board/list`);
+    const response = await axios(`${URL}/api/admin/board/list`);
     return response;
   };
 
-  const getTokenExpiredMsg = (ok: boolean, code: number) => {
-    if (!ok && code === 401) {
-      window.alert("session expired login again");
-      router.replace("/");
-      return true;
-    }
-    return false;
-  };
+  // const getTokenExpiredMsg = (ok: boolean, code: number) => {
+  //   if (!ok && code === 401) {
+  //     window.alert("session expired login again");
+  //     router.replace("/");
+  //     return true;
+  //   }
+  //   return false;
+  // };
 
   const dataInitialize = () => {
     setSelectedPBoard(null);
@@ -96,9 +100,8 @@ const BoardManage = (props: BoardManageProps) => {
       };
     }
 
-    const res = await axiosWithAuth.post(`${URL}/api/admin/board`, data);
+    const res = await axios.post(`${URL}/api/admin/board`, data);
     const resData = res.data;
-    if (getTokenExpiredMsg(resData.ok, resData.code)) return;
     if (!resData.ok && resData.code === 4012) {
       window.alert(resData.msg);
       return;
@@ -106,7 +109,6 @@ const BoardManage = (props: BoardManageProps) => {
 
     const resBoardList = await getBoardListResponse();
     const boardListData = resBoardList.data;
-    if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
 
     setBoardData(boardListData.data);
     dataInitialize();
@@ -130,9 +132,8 @@ const BoardManage = (props: BoardManageProps) => {
       id = selectedPBoard.id;
     }
     const data = { name };
-    const res = await axiosWithAuth.patch(`${URL}/api/admin/board/${id}`, data);
+    const res = await axios.patch(`${URL}/api/admin/board/${id}`, data);
     const resData = res.data;
-    if (getTokenExpiredMsg(resData.ok, resData.code)) return;
     if (!resData.ok) {
       window.alert(resData.msg);
       return;
@@ -140,7 +141,6 @@ const BoardManage = (props: BoardManageProps) => {
 
     const resBoardList = await getBoardListResponse();
     const boardListData = resBoardList.data;
-    if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
 
     setBoardData(boardListData.data);
     dataInitialize();
@@ -157,9 +157,8 @@ const BoardManage = (props: BoardManageProps) => {
       id = selectedPBoard.id;
     }
 
-    const res = await axiosWithAuth.delete(`${URL}/api/admin/board/${id}`);
+    const res = await axios.delete(`${URL}/api/admin/board/${id}`);
     const data = res.data;
-    if (getTokenExpiredMsg(data.ok, data.code)) return;
     if (!data.ok) {
       window.alert(data.msg);
       return;
@@ -169,7 +168,6 @@ const BoardManage = (props: BoardManageProps) => {
     const boardListData = resBoardList.data;
     console.log(boardListData);
 
-    if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
     setBoardData(boardListData.data);
     dataInitialize();
   };

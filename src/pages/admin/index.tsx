@@ -11,6 +11,9 @@ import { loginStateSchema } from "@/states/loginState";
 
 import { axiosWithAuth } from "@/util/customAxios";
 
+import LoginGuard from "@/components/LoginGuard/LoginGuard";
+import useAxios from "@/customHooks/useAxios";
+
 import DraggableWrapper from "@/util/draggableWrapper";
 import PostingManage from "@/components/Manage/PostingManage";
 import BoardManage from "@/components/Manage/BoardManage";
@@ -25,7 +28,7 @@ const AnnounceMessage = styled.span`
   ${tw`text-4xl`}
 `;
 
-const LoginGuard = () => {
+const LoginAnnounce = () => {
   return (
     <NeedLoginMessage>
       <AnnounceMessage>Please Login</AnnounceMessage>
@@ -56,6 +59,7 @@ const Admin = (props: AdminProps) => {
   const URL = `${process.env.NEXT_PUBLIC_API_SERVER_URL}`;
 
   const router = useRouter();
+  const axios = useAxios();
 
   const loginState = useRecoilValue(loginStateSchema);
 
@@ -69,7 +73,7 @@ const Admin = (props: AdminProps) => {
 
   // const inputRef = useRef<HTMLInputElement>(null);
   const getBoardListResponse = async () => {
-    const response = await axiosWithAuth(`${URL}/api/admin/board/list`);
+    const response = await axios(`${URL}/api/admin/board/list`);
     return response;
   };
 
@@ -85,22 +89,14 @@ const Admin = (props: AdminProps) => {
     setSelectedBoard(board);
   };
 
-  const getTokenExpiredMsg = (ok: boolean, code: number) => {
-    if (!ok && code === 401) {
-      window.alert("session expired login again");
-      router.replace("/");
-      return true;
-    }
-    return false;
-  };
-
-  const buttonClickHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const categoryBtnClickHandler = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     const value = e.currentTarget.value;
 
     setContentState(value);
     const response = await getBoardListResponse();
     const data = response.data;
-    if (getTokenExpiredMsg(data.ok, data.code)) return;
 
     setBoardData((prev) => data.data);
     if (value === "board_manage") {
@@ -118,164 +114,34 @@ const Admin = (props: AdminProps) => {
     setSelectedBoard(null);
   };
 
-  // const pBoardBtnClickHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-  //   const value = parseInt(e.currentTarget.value);
-  //   const pBoard = boardData.filter((b: ParentBoard) => b.id === value)[0];
+  return (
+    <LoginGuard>
+      <AdminContainer className="min-w-min">
+        <div className="w-[250px] border border-red-200 hidden lg:block">
+          <div className="text-2xl ml-6 w-full">
+            <div>
+              <span>관리</span>
+            </div>
+            <div className="border-s-4 px-2 mb-1 hover:border-red-200">
+              <button
+                className="mr-2"
+                value="board_manage"
+                onClick={categoryBtnClickHandler}
+              >
+                {"게시판 관리"}
+              </button>
+            </div>
 
-  //   if (pBoard) {
-  //     setSelectedPBoard(pBoard);
-  //     setSelectedBoard(null);
-  //   }
-  // };
-
-  // const boardBtnClickHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-  //   const value = parseInt(e.currentTarget.value);
-  //   const board = selectedPBoard?.children.filter((b) => b.id === value)[0];
-  //   console.log(board);
-  //   if (board) setSelectedBoard(board);
-  // };
-
-  // const boardSelectedCancelHandler = (
-  //   e: React.MouseEvent<HTMLButtonElement>
-  // ) => {
-  //   inputRef.current!.value = "";
-  //   dataInitialize();
-  // };
-
-  // const boardAddHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
-  //   const inputValue = inputRef.current!.value;
-  //   if (inputValue.length <= 0 || inputValue.indexOf("'") !== -1) {
-  //     window.alert("Please Input Valid string");
-  //     return;
-  //   }
-
-  //   let data;
-  //   if (selectedPBoard && selectedBoard) {
-  //     window.alert("Can not make 3level board");
-  //     return;
-  //   }
-  //   if (!selectedPBoard) {
-  //     data = {
-  //       data: {
-  //         name: inputValue,
-  //         parentId: 0,
-  //       },
-  //     };
-  //   }
-
-  //   if (selectedPBoard && !selectedBoard) {
-  //     data = {
-  //       data: { name: inputValue, parentId: selectedPBoard.id },
-  //     };
-  //   }
-
-  //   const res = await axiosWithAuth.post(`${URL}/api/admin/board`, data);
-  //   const resData = res.data;
-  //   if (getTokenExpiredMsg(resData.ok, resData.code)) return;
-  //   if (!resData.ok && resData.code === 4012) {
-  //     window.alert(resData.msg);
-  //     return;
-  //   }
-
-  //   const resBoardList = await getBoardListResponse();
-  //   const boardListData = resBoardList.data;
-  //   if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
-
-  //   setBoardData(boardListData.data);
-  //   dataInitialize();
-  //   inputRef.current!.value = "";
-  // };
-
-  // const boardNameChangeHandler = async (
-  //   e: React.MouseEvent<HTMLButtonElement>
-  // ) => {
-  //   let id;
-  //   const inputValue = inputRef.current!.value;
-  //   if (inputValue.length <= 0 || inputValue.indexOf("'") !== -1) {
-  //     window.alert("Please Input Valid string");
-  //     return;
-  //   }
-  //   const name = inputValue;
-  //   if (selectedBoard && selectedPBoard) {
-  //     id = selectedBoard.id;
-  //   }
-  //   if (!selectedBoard && selectedPBoard) {
-  //     id = selectedPBoard.id;
-  //   }
-  //   const data = { name };
-  //   const res = await axiosWithAuth.patch(`${URL}/api/admin/board/${id}`, data);
-  //   const resData = res.data;
-  //   if (getTokenExpiredMsg(resData.ok, resData.code)) return;
-  //   if (!resData.ok) {
-  //     window.alert(resData.msg);
-  //     return;
-  //   }
-
-  //   const resBoardList = await getBoardListResponse();
-  //   const boardListData = resBoardList.data;
-  //   if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
-
-  //   setBoardData(boardListData.data);
-  //   dataInitialize();
-  //   inputRef.current!.value = "";
-  // };
-
-  // const boardDeleteHandler = async (e: React.MouseEvent<HTMLButtonElement>) => {
-  //   let id;
-  //   if (selectedBoard && selectedPBoard) {
-  //     id = selectedBoard.id;
-  //   }
-
-  //   if (!selectedBoard && selectedPBoard) {
-  //     id = selectedPBoard.id;
-  //   }
-
-  //   const res = await axiosWithAuth.delete(`${URL}/api/admin/board/${id}`);
-  //   const data = res.data;
-  //   if (getTokenExpiredMsg(data.ok, data.code)) return;
-  //   if (!data.ok) {
-  //     window.alert(data.msg);
-  //     return;
-  //   }
-
-  //   const resBoardList = await getBoardListResponse();
-  //   const boardListData = resBoardList.data;
-  //   console.log(boardListData);
-
-  //   if (getTokenExpiredMsg(boardListData.ok, boardListData.code)) return;
-  //   setBoardData(boardListData.data);
-  //   dataInitialize();
-  // };
-
-  return !loginState.isLogin ? (
-    <LoginGuard />
-  ) : (
-    <AdminContainer className="min-w-min">
-      <div className="w-[250px] border border-red-200 hidden lg:block">
-        <div className="text-2xl ml-6 w-full">
-          <div>
-            <span>관리</span>
-          </div>
-          <div className="border-s-4 px-2 mb-1 hover:border-red-200">
-            <button
-              className="mr-2"
-              value="board_manage"
-              onClick={buttonClickHandler}
-            >
-              {"게시판 관리"}
-            </button>
-          </div>
-
-          <div className="border-s-4 px-2 mb-1 hover:border-red-200">
-            <button
-              className="mr-2"
-              value="posting_manage"
-              onClick={buttonClickHandler}
-            >
-              {"게시글 관리"}
-            </button>
-          </div>
-          {/* <div className="flex justify-between items-center">
+            <div className="border-s-4 px-2 mb-1 hover:border-red-200">
+              <button
+                className="mr-2"
+                value="posting_manage"
+                onClick={categoryBtnClickHandler}
+              >
+                {"게시글 관리"}
+              </button>
+            </div>
+            {/* <div className="flex justify-between items-center">
                   <span className="mr-2">{게시판 관리}</span>
                   
                 </div>
@@ -296,37 +162,37 @@ const Admin = (props: AdminProps) => {
                     </div>
                   ))}
                 </div> */}
+          </div>
         </div>
-      </div>
-      <div className="flex-1 border border-blue-200 flex justify-center items-center">
-        {/* TODO */}
-        {contentState === "default" ? <div>default page</div> : <></>}
-        {contentState === "board_manage" ? (
-          <BoardManage
-            boardData={boardData}
-            setBoardData={setBoardDataHandler}
-            selectedBoard={selectedBoard}
-            selectedPBoard={selectedPBoard}
-            setSelectedBoard={setSelectedBoardHandler}
-            setSelectedPBoard={setSeletedPBoardHandler}
-          ></BoardManage>
-        ) : (
-          <></>
-        )}
-        {contentState === "posting_manage" ? (
-          <PostingManage
-            boardData={boardData}
-            setBoardData={setBoardDataHandler}
-            selectedBoard={selectedBoard}
-            selectedPBoard={selectedPBoard}
-            setSelectedBoard={setSelectedBoardHandler}
-            setSelectedPBoard={setSeletedPBoardHandler}
-          ></PostingManage>
-        ) : (
-          <></>
-        )}
-      </div>
-      {/* <DraggableWrapper>
+        <div className="flex-1 border border-blue-200 flex justify-center items-center">
+          {/* TODO */}
+          {contentState === "default" ? <div>default page</div> : <></>}
+          {contentState === "board_manage" ? (
+            <BoardManage
+              boardData={boardData}
+              setBoardData={setBoardDataHandler}
+              selectedBoard={selectedBoard}
+              selectedPBoard={selectedPBoard}
+              setSelectedBoard={setSelectedBoardHandler}
+              setSelectedPBoard={setSeletedPBoardHandler}
+            ></BoardManage>
+          ) : (
+            <></>
+          )}
+          {contentState === "posting_manage" ? (
+            <PostingManage
+              boardData={boardData}
+              setBoardData={setBoardDataHandler}
+              selectedBoard={selectedBoard}
+              selectedPBoard={selectedPBoard}
+              setSelectedBoard={setSelectedBoardHandler}
+              setSelectedPBoard={setSeletedPBoardHandler}
+            ></PostingManage>
+          ) : (
+            <></>
+          )}
+        </div>
+        {/* <DraggableWrapper>
         <ListContainer style={{ width: "300px" }}>
           List Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque
           suscipit minus dignissimos dolorem totam cupiditate. Consequuntur
@@ -334,9 +200,8 @@ const Admin = (props: AdminProps) => {
           tempora veniam, excepturi suscipit architecto.
         </ListContainer>
       </DraggableWrapper> */}
-
-      {/* <ContentContainer>Content</ContentContainer> */}
-    </AdminContainer>
+      </AdminContainer>
+    </LoginGuard>
   );
 };
 

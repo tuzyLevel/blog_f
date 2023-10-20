@@ -2,7 +2,9 @@ import React, { useState, useRef } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { axiosWithAuth } from "@/util/customAxios";
+import useAxios from "@/customHooks/useAxios";
+
+// import { axiosWithAuth } from "@/util/customAxios";
 
 interface BoardManageProps extends React.PropsWithChildren {
   boardData: ParentBoard[] | null;
@@ -18,6 +20,8 @@ const BoardManage = (props: BoardManageProps) => {
 
   const router = useRouter();
 
+  const axios = useAxios();
+
   const [postingList, setPostingList] = useState<Posting[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,7 +34,7 @@ const BoardManage = (props: BoardManageProps) => {
   const setSelectedBoard = props.setSelectedBoard;
 
   const getBoardListResponse = async () => {
-    const response = await axiosWithAuth(`${URL}/api/admin/board/list`);
+    const response = await axios(`${URL}/api/admin/board/list`);
     return response;
   };
 
@@ -203,9 +207,7 @@ const BoardManage = (props: BoardManageProps) => {
       )[0];
       if (board) {
         setSelectedBoard(board);
-        const res = await axiosWithAuth(
-          `${URL}/api/admin/posting/list/${board.id}`
-        );
+        const res = await axios(`${URL}/api/admin/posting/list/${board.id}`);
         const { data } = res;
         if (getTokenExpiredMsg(data.ok, data.code)) return;
         console.log(data);

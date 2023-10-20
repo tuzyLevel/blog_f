@@ -30,8 +30,7 @@ bg-white
 top-0 
 h-14 
 w-full 
-border 
-border-red-400
+border-b-4
 flex 
 justify-between 
 items-center 
